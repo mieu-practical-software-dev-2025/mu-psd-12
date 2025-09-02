@@ -64,13 +64,15 @@ def send_api():
         app.logger.error("Received text is empty or whitespace.")
         return jsonify({"error": "Input text cannot be empty"}), 400
     
-    # contextがあればsystemプロンプトに設定、なければデフォルト値
-    system_prompt = "140字以内で回答してください。" # デフォルトのシステムプロンプト
-    if 'context' in data and data['context'] and data['context'].strip():
-        system_prompt = data['context'].strip()
-        app.logger.info(f"Using custom system prompt from context: {system_prompt}")
-    else:
-        app.logger.info(f"Using default system prompt: {system_prompt}")
+    # systemプロンプトの設定
+    system_prompt = "あなたは「相手と親しくしたい」という下心を持ったおじさんです。ユーザーからの入力を、次の条件を満たすようなおじさん構文に変換してください : "
+    prompt_cond = ["絵文字を多用する", "カタカナを多用する", "読点を多用する", "敬語が「だヨ～」「ネ～」になる", "疑問文末が「カナ❓」である", "気遣いや誘いをする", "140字以内である"]
+    cond_num = len(prompt_cond)
+    for i in range(cond_num):
+        system_prompt += prompt_cond[i]
+        if i < cond_num - 1:
+            system_prompt += "、"
+    app.logger.info(f"Using system prompt: {system_prompt}")
 
     try:
         # OpenRouter APIを呼び出し
