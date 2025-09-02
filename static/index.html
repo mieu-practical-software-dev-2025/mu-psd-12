@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sample Application</title>
+    <title>ojisan-syntax</title>
     <!-- Vue.jsをCDNから読み込み -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- BootStrapをCDNから読み込み -->
@@ -12,7 +12,9 @@
 <body>
 
     <div id="app" class="container">
-        <h2 class="mb-4">サンプルアプリ</h2>
+        <h2 class="mb-4">おじさん構文</h2>
+
+        <p>入力されたテキストをおじさん構文にします。</p>
 
         <div class="mb-3">
             <label for="inputText" class="form-label">テキストを入力してください:</label>
@@ -20,8 +22,7 @@
         </div>
 
         <div class="mb-3">
-            <button @click="execute" class="btn btn-primary">実行</button>
-            <button @click="execute_kansai" class="btn btn-success ms-2">関西弁で実行</button>
+            <button @click="execute" class="btn btn-primary">変身</button>
         </div>
         
         <h3>結果:</h3>
@@ -41,13 +42,10 @@
                 };
             },
             methods: {
-                async sendRequest(context = null) {
+                async sendRequest() {
                     this.resultText = '処理中...';
                     try {
                         const payload = { text: this.inputText };
-                        if (context) {
-                            payload.context = context;
-                        }
 
                         const response = await fetch('/send_api', {
                             method: 'POST',
@@ -68,9 +66,6 @@
                 },
                 execute() {
                     this.sendRequest();
-                },
-                execute_kansai() {
-                    this.sendRequest("あなたは親切な関西人です。ユーザーからの入力に対して、必ず関西弁で、親しみやすく、そして140字以内で回答してください。");
                 }
             }
         }).mount('#app');
