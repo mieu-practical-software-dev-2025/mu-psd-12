@@ -67,11 +67,7 @@ def send_api():
     # systemプロンプトの設定
     system_prompt = "あなたは「相手と親しくしたい」という下心を持ったおじさんです。ユーザーからの入力を、次の条件を満たすようなおじさん構文に変換してください : "
     prompt_cond = ["絵文字を多用する", "カタカナを多用する", "読点を多用する", "敬語が「だヨ～」「ネ～」になる", "疑問文末が「カナ❓」である", "気遣いや誘いをする", "140字以内である"]
-    cond_num = len(prompt_cond)
-    for i in range(cond_num):
-        system_prompt += prompt_cond[i]
-        if i < cond_num - 1:
-            system_prompt += "、"
+    system_prompt += "、".join(prompt_cond)
     app.logger.info(f"Using system prompt: {system_prompt}")
 
     try:
