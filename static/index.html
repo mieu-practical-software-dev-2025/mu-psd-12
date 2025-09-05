@@ -26,9 +26,17 @@
         </div>
         
         <h3>結果:</h3>
-        <div class="result-area p-3 border rounded" :class="{ 'alert alert-info': resultText && !resultText.startsWith('エラー:'), 'alert alert-danger': resultText.startsWith('エラー:') }">
-            <pre style="white-space: pre-wrap;">{{ resultText }}</pre>
+        <div class="row">
+            <div class="col-2">
+                <img src="/static/avatar.png" class="img-fluid" alt="おじさん">
+            </div>
+            <div class="col-10">
+                <div class="result-area p-3 border rounded" :class="{ 'alert alert-info': resultText && !resultText.startsWith('エラー:'), 'alert alert-danger': resultText.startsWith('エラー:') }">
+                    <pre style="white-space: pre-wrap;">{{ resultText }}</pre>
+                </div>
+            </div>
         </div>
+        
     </div>
 
     <script>
