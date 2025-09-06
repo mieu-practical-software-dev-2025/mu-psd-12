@@ -29,7 +29,7 @@
         <h3>結果:</h3>
         <div class="row">
             <div class="col-2">
-                <img src="/static/img/ojisan.png" class="img-fluid" alt="おじさん">
+                <img src="/static/img/ojisan.png" alt="おじさん" class="img-fluid" id="ojisan-img">
             </div>
             <div class="col-10">
                 <div class="result-area p-3 border rounded" :class="{ 'alert alert-info': resultText && !resultText.startsWith('エラー:'), 'alert alert-danger': resultText.startsWith('エラー:') }">
@@ -53,6 +53,8 @@
             methods: {
                 async sendRequest() {
                     this.resultText = '処理中...';
+                    const ojisanImg = document.getElementById('ojisan-img');
+                    ojisanImg.src = '/static/img/ojisan_thinking.png';
                     try {
                         const payload = { text: this.inputText };
 
@@ -66,11 +68,14 @@
                         const data = await response.json();
                         if (response.ok) {
                             this.resultText = data.processed_text;
+                            ojisanImg.src = '/static/img/ojisan.png';
                         } else {
                             this.resultText = `エラー: ${data.error || '不明なエラーが発生しました。'}`;
+                            ojisanImg.src = '/static/img/ojisan_error.png';
                         }
                     } catch (error) {
                         this.resultText = `エラー: ${error.message}`;
+                        ojisanImg.src = '/static/img/ojisan_error.png';
                     }
                 },
                 execute() {
