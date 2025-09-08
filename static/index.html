@@ -68,7 +68,22 @@
                         const data = await response.json();
                         if (response.ok) {
                             this.resultText = data.processed_text;
-                            ojisanImg.src = '/static/img/ojisan.png';
+                            switch (data.emotion) {
+                                case 1:
+                                    ojisanImg.src = '/static/img/ojisan_ki.png';
+                                    break;
+                                case 2:
+                                    ojisanImg.src = '/static/img/ojisan_do.png';
+                                    break;
+                                case 3:
+                                    ojisanImg.src = '/static/img/ojisan_ai.png';
+                                    break;
+                                case 4:
+                                    ojisanImg.src = '/static/img/ojisan_raku.png';
+                                    break;
+                                default:
+                                    ojisanImg.src = '/static/img/ojisan.png';
+                            }
                         } else {
                             this.resultText = `エラー: ${data.error || '不明なエラーが発生しました。'}`;
                             ojisanImg.src = '/static/img/ojisan_error.png';

@@ -64,10 +64,14 @@ def send_api():
         app.logger.error("Received text is empty or whitespace.")
         return jsonify({"error": "Input text cannot be empty"}), 400
     
+    # ユーザー入力をおじさん構文にするためのAPI処理
+
     # systemプロンプトの設定
-    system_prompt = "あなたは「相手と親しくしたい」という下心を持ったおじさんです。ユーザーからの入力を、次の条件を満たすようなおじさん構文に変換してください : "
+    system_prompt = "あなたは「相手と親しくしたい」という下心を持ったおじさんです。ユーザーからの入力を、ユーザーになりきって、次の条件を満たすような文章に変換してください : "
     prompt_cond = ["絵文字を多用する", "カタカナを多用する", "読点を多用する", "敬語が「だヨ～」「ネ～」になる", "疑問文末が「カナ❓」である", "気遣いや誘いをする", "140字以内である"]
     system_prompt += "、".join(prompt_cond)
+    #system_prompt += "。ユーザーからの入力に対するあなたの返答ではなく、ユーザーからの入力そのものを、意味を変えずに変換してください。"
+    app.logger.info("OpenRouter API call (to generate ojisan-syntax)")
     app.logger.info(f"Using system prompt: {system_prompt}")
 
     try:
@@ -88,13 +92,44 @@ def send_api():
             processed_text = chat_completion.choices[0].message.content
         else:
             processed_text = "AIから有効な応答がありませんでした。"
-            
-        return jsonify({"message": "AIによってデータが処理されました。", "processed_text": processed_text})
 
     except Exception as e:
-        app.logger.error(f"OpenRouter API call failed: {e}")
+        app.logger.error(f"OpenRouter API call (to generate ojisan-syntax) failed: {e}")
         # クライアントには具体的なエラー詳細を返しすぎないように注意
         return jsonify({"error": f"AIサービスとの通信中にエラーが発生しました。"}), 500
+
+    # ユーザー入力の感情を判定するためのAPI処理
+
+    # systemプロンプトの設定
+    system_prompt = "あなたは人の感情を分析する専門家です。ユーザーからの入力の喜怒哀楽を判定し、「喜」ならば1を、「怒」ならば2を、「哀」ならば3を、「楽」ならば4を返してください。数字以外は返さないでください。"
+    app.logger.info("OpenRouter API call (to judge user's emotion)")
+    app.logger.info(f"Using system prompt: {system_prompt}")
+
+    try:
+        """
+        # OpenRouter APIを呼び出し
+        chat_completion = client.chat.completions.create(
+            messages=[ # type: ignore
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": received_text}
+            ], # type: ignore
+            model="google/gemma-3-27b-it:free", 
+        )
+        
+        # APIからのレスポンスを取得
+        if chat_completion.choices and chat_completion.choices[0].message:
+            emotion = int(chat_completion.choices[0].message.content)
+        else:
+            emotion = 0
+        """
+        emotion = 0
+            
+        return jsonify({"message": "AIによってデータが処理されました。", "emotion": emotion, "processed_text": processed_text})
+    
+    except Exception as e:
+        # 感情判定はおまけ機能なので 失敗してもエラーにしない
+        app.logger.warning(f"OpenRouter API call (to judge user's emotion) failed: {e}")
+        return jsonify({"message": "AIによってデータが処理されました。", "emotion": 0, "processed_text": processed_text})
 
 # スクリプトが直接実行された場合にのみ開発サーバーを起動
 if __name__ == '__main__':
