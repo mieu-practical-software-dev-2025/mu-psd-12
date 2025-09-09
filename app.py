@@ -67,46 +67,22 @@ def send_api():
     # ユーザー入力をおじさん構文にするためのAPI処理
 
     # systemプロンプトの設定
-    # プロンプトを、対話形式ではなく、単一の指示と入力補完の形式に変更します。
-    instruction_prompt = """あなたは文章を変換するツールです。
-与えられた文章を、以下のルールに従って「おじさん構文」に変換してください。
-変換後の文章だけを出力し、他の余計なテキストは一切含めないでください。
-
-# ルール
-- 絵文字を多用する（例: 😅、💦、👍）
-- カタカナを多用する（例: 「ランチ」→「ランチ」、「OK」→「オッケー」）
-- 読点を多用する（例: 「、」）
-- 語尾が「～だヨ」「～ネ」「～カナ❓」といった親しげな口調になる
-- 相手を気遣う言葉や、食事の誘いなどを文脈に合わせて自然に追加することがある
-- 全体で140字以内にする
-
-# 変換例
-入力: 「今日のランチどうする？」
-出力: 「〇〇チャン、今日のランチ、どうするのかな❓😋おじさんと、美味しいラーメン🍜でも、食べにイカないかい❓😉」
-
-入力: 「会議の資料、ありがとうございます。」
-出力: 「〇〇チャン、会議の資料、ありがとうネ～❗😄助かるヨ👍今度、お礼に美味しいものでも、ご馳走させてほしいナ😋」
-
-# 重要
-- あなた自身の意見や返答は絶対に生成しないでください。
-- 入力された文章の意味を保ったまま、スタイルだけを変換してください。
-
----
-これから、以下の入力文章をルールに従って変換してください。
-"""
-    # 指示とユーザー入力を結合して、モデルに渡す最終的なプロンプトを作成します。
-    # "出力: "で終えることで、モデルに続きを生成するように促します。
-    final_prompt = f'{instruction_prompt}\n\n入力: 「{received_text}」\n出力: '
-
+    system_prompt = "あなたは文章を変換するツールです。与えられた文章を、その意味を変えずに、以下のルールに従って「おじさん構文」に変換してください。変換後の文章だけを出力し、他の余計なテキストは一切含めないでください。"
+    prompt_cond = ["絵文字を多用する", "カタカナを多用する", "読点を多用する", "語尾が「～だヨ」「～ネ」「～カナ❓」といった親しげな口調になる", "気遣いや誘いをする", "140字以内である"]
+    system_prompt += "条件は以下の通りです。\n・" + "\n・".join(prompt_cond)
+    system_prompt += "\n\n重要: 入力に対するあなたの返答を作成してはいけません。入力された文章そのものを変換してください。"
     app.logger.info("OpenRouter API call (to generate ojisan-syntax)")
-    app.logger.info(f"Using final prompt: {final_prompt}")
+    app.logger.info(f"Using system prompt: {system_prompt}")
+
     try:
         # OpenRouter APIを呼び出し
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "user", "content": final_prompt}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": received_text}
             ],
             model="google/gemma-3-27b-it:free",
+            #model="google/gemini-2.0-flash-exp:free",
         )
         
         # APIからのレスポンスを取得
@@ -120,7 +96,7 @@ def send_api():
         # クライアントには具体的なエラー詳細を返しすぎないように注意
         return jsonify({"error": f"AIサービスとの通信中にエラーが発生しました。"}), 500
 
-    # ユーザー入力の感情を判定するためのAPI処理
+    # ユーザー入力の感情を判定する(おじさんの画像切り替え用)ためのAPI処理
 
     # systemプロンプトの設定
     system_prompt = "あなたは人の感情を分析する専門家です。ユーザーからの入力の喜怒哀楽を判定し、「喜」ならば1を、「怒」ならば2を、「哀」ならば3を、「楽」ならば4を返してください。数字以外は返さないでください。"
@@ -128,13 +104,12 @@ def send_api():
     app.logger.info(f"Using system prompt: {system_prompt}")
 
     try:
-        """
         # OpenRouter APIを呼び出し
         chat_completion = client.chat.completions.create(
-            messages=[ # type: ignore
+            messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": received_text}
-            ], # type: ignore
+            ],
             model="google/gemma-3-27b-it:free", 
         )
         
@@ -143,8 +118,6 @@ def send_api():
             emotion = int(chat_completion.choices[0].message.content)
         else:
             emotion = 0
-        """
-        emotion = 0
             
         return jsonify({"message": "AIによってデータが処理されました。", "emotion": emotion, "processed_text": processed_text})
     

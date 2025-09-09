@@ -1,12 +1,12 @@
 # テスト仕様書: Flask + OpenRouter AI チャットアプリ
 
 ## 1. テスト対象
-- `app.py`（Flaskサーバー/APIバックエンド）
-- `static/index.html`（フロントエンドUI）
+- `app.py` (Flaskサーバー/APIバックエンド)
+- `static/index.html` (フロントエンドUI)
 
 ## 2. テスト環境
 - Windows 11
-- Python 3.8以降
+- Python 3.11.9
 - Flask, openai, python-dotenv
 - OpenRouter APIキー設定済み
 - ブラウザ: Microsoft Edge
