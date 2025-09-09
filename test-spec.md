@@ -5,11 +5,11 @@
 - `static/index.html`（フロントエンドUI）
 
 ## 2. テスト環境
-- Windows 10/11
+- Windows 11
 - Python 3.8以降
 - Flask, openai, python-dotenv
 - OpenRouter APIキー設定済み
-- ブラウザ: Chrome, Edge, Firefox
+- ブラウザ: Microsoft Edge
 
 ## 3. テスト項目
 

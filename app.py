@@ -67,24 +67,46 @@ def send_api():
     # ユーザー入力をおじさん構文にするためのAPI処理
 
     # systemプロンプトの設定
-    system_prompt = "あなたは「相手と親しくしたい」という下心を持ったおじさんです。ユーザーからの入力を、ユーザーになりきって、次の条件を満たすような文章に変換してください : "
-    prompt_cond = ["絵文字を多用する", "カタカナを多用する", "読点を多用する", "敬語が「だヨ～」「ネ～」になる", "疑問文末が「カナ❓」である", "気遣いや誘いをする", "140字以内である"]
-    system_prompt += "、".join(prompt_cond)
-    #system_prompt += "。ユーザーからの入力に対するあなたの返答ではなく、ユーザーからの入力そのものを、意味を変えずに変換してください。"
-    app.logger.info("OpenRouter API call (to generate ojisan-syntax)")
-    app.logger.info(f"Using system prompt: {system_prompt}")
+    # プロンプトを、対話形式ではなく、単一の指示と入力補完の形式に変更します。
+    instruction_prompt = """あなたは文章を変換するツールです。
+与えられた文章を、以下のルールに従って「おじさん構文」に変換してください。
+変換後の文章だけを出力し、他の余計なテキストは一切含めないでください。
 
+# ルール
+- 絵文字を多用する（例: 😅、💦、👍）
+- カタカナを多用する（例: 「ランチ」→「ランチ」、「OK」→「オッケー」）
+- 読点を多用する（例: 「、」）
+- 語尾が「～だヨ」「～ネ」「～カナ❓」といった親しげな口調になる
+- 相手を気遣う言葉や、食事の誘いなどを文脈に合わせて自然に追加することがある
+- 全体で140字以内にする
+
+# 変換例
+入力: 「今日のランチどうする？」
+出力: 「〇〇チャン、今日のランチ、どうするのかな❓😋おじさんと、美味しいラーメン🍜でも、食べにイカないかい❓😉」
+
+入力: 「会議の資料、ありがとうございます。」
+出力: 「〇〇チャン、会議の資料、ありがとうネ～❗😄助かるヨ👍今度、お礼に美味しいものでも、ご馳走させてほしいナ😋」
+
+# 重要
+- あなた自身の意見や返答は絶対に生成しないでください。
+- 入力された文章の意味を保ったまま、スタイルだけを変換してください。
+
+---
+これから、以下の入力文章をルールに従って変換してください。
+"""
+    # 指示とユーザー入力を結合して、モデルに渡す最終的なプロンプトを作成します。
+    # "出力: "で終えることで、モデルに続きを生成するように促します。
+    final_prompt = f'{instruction_prompt}\n\n入力: 「{received_text}」\n出力: '
+
+    app.logger.info("OpenRouter API call (to generate ojisan-syntax)")
+    app.logger.info(f"Using final prompt: {final_prompt}")
     try:
         # OpenRouter APIを呼び出し
-        # モデル名はOpenRouterで利用可能なモデルを指定してください。
-        # 例: "mistralai/mistral-7b-instruct", "google/gemini-pro", "openai/gpt-3.5-turbo"
-        # 詳細はOpenRouterのドキュメントを参照してください。
         chat_completion = client.chat.completions.create(
-            messages=[ # type: ignore
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": received_text}
-            ], # type: ignore
-            model="google/gemma-3-27b-it:free", 
+            messages=[
+                {"role": "user", "content": final_prompt}
+            ],
+            model="google/gemma-3-27b-it:free",
         )
         
         # APIからのレスポンスを取得
